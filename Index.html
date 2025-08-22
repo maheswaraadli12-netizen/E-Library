@@ -1,0 +1,1017 @@
+
+import React, { useState, useEffect } from 'react';
+
+const App = () => {
+  const [currentView, setCurrentView] = useState('home');
+  const [selectedBook, setSelectedBook] = useState(null);
+  const [selectedChapter, setSelectedChapter] = useState(null);
+  const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  const [isReading, setIsReading] = useState(false);
+  const [filterType, setFilterType] = useState('All');
+  const [filterGenre, setFilterGenre] = useState('All');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [viewMode, setViewMode] = useState('latest'); // 'latest', 'popular', 'all'
+  const [bookmarks, setBookmarks] = useState([]);
+  const [history, setHistory] = useState([]);
+
+  // Mock data for books with proper genre classification and sorting criteria
+  const bookList = [
+    {
+      id: 1,
+      title: "Mathematics for Advanced Students",
+      image: "https://placehold.co/300x400/6366f1/ffffff?text=Math+Textbook",
+      author: "Dr. Robert Chen",
+      genre: "Science",
+      type: "Textbook",
+      status: "Completed",
+      description: "Comprehensive guide to advanced mathematics concepts for university students",
+      chapters: 12,
+      latestChapter: "Chapter 12",
+      firstChapter: "Chapter 01",
+      tags: ["Mathematics", "Algebra", "Calculus", "Geometry"],
+      views: 543000,
+      addedDate: "2024-01-15"
+    },
+    {
+      id: 2,
+      title: "The Silent Forest",
+      image: "https://placehold.co/300x400/8b5cf6/ffffff?text=The+Silent+Forest",
+      author: "Emily Watson",
+      genre: "Fiction",
+      type: "Novel",
+      status: "Ongoing",
+      description: "A gripping novel about isolation and human connection in modern society",
+      chapters: 8,
+      latestChapter: "Chapter 08",
+      firstChapter: "Chapter 01",
+      tags: ["Drama", "Romance", "Psychological"],
+      views: 604000,
+      addedDate: "2024-02-20"
+    },
+    {
+      id: 3,
+      title: "The Time Traveler's Guide",
+      image: "https://placehold.co/300x400/06b6d4/ffffff?text=Time+Travel",
+      author: "James Thompson",
+      genre: "Fiction",
+      type: "Novel",
+      status: "Completed",
+      description: "An adventurous tale of time travel and historical exploration",
+      chapters: 15,
+      latestChapter: "Chapter 15",
+      firstChapter: "Chapter 01",
+      tags: ["Adventure", "Fantasy", "Sci-Fi"],
+      views: 789000,
+      addedDate: "2024-03-10"
+    },
+    {
+      id: 4,
+      title: "Advanced Physics Principles",
+      image: "https://placehold.co/300x400/10b981/ffffff?text=Physics+Textbook",
+      author: "Prof. Sarah Lee",
+      genre: "Science",
+      type: "Textbook",
+      status: "Ongoing",
+      description: "In-depth exploration of quantum mechanics and theoretical physics",
+      chapters: 20,
+      latestChapter: "Chapter 20",
+      firstChapter: "Chapter 01",
+      tags: ["Physics", "Quantum", "Mechanics", "Theory"],
+      views: 456000,
+      addedDate: "2024-01-25"
+    },
+    {
+      id: 5,
+      title: "Historical Events of the 20th Century",
+      image: "https://placehold.co/300x400/f59e0b/ffffff?text=History+Textbook",
+      author: "Dr. Michael Brown",
+      genre: "Non-Fiction",
+      type: "Textbook",
+      status: "Completed",
+      description: "Comprehensive overview of major historical events in the 20th century",
+      chapters: 18,
+      latestChapter: "Chapter 18",
+      firstChapter: "Chapter 01",
+      tags: ["History", "Politics", "World War", "Cold War"],
+      views: 876000,
+      addedDate: "2024-02-05"
+    },
+    {
+      id: 6,
+      title: "The Quantum Conspiracy",
+      image: "https://placehold.co/300x400/ef4444/ffffff?text=Quantum+Thriller",
+      author: "Lena Rodriguez",
+      genre: "Fiction",
+      type: "Novel",
+      status: "Ongoing",
+      description: "A thrilling mystery involving quantum physics and secret government experiments",
+      chapters: 12,
+      latestChapter: "Chapter 12",
+      firstChapter: "Chapter 01",
+      tags: ["Mystery", "Thriller", "Sci-Fi", "Conspiracy"],
+      views: 923000,
+      addedDate: "2024-03-15"
+    },
+    {
+      id: 7,
+      title: "Modern Chemistry Applications",
+      image: "https://placehold.co/300x400/8b5cf6/ffffff?text=Chemistry+Textbook",
+      author: "Dr. Alan Wilson",
+      genre: "Science",
+      type: "Textbook",
+      status: "Ongoing",
+      description: "Practical applications of chemistry in modern technology and industry",
+      chapters: 14,
+      latestChapter: "Chapter 14",
+      firstChapter: "Chapter 01",
+      tags: ["Chemistry", "Applications", "Technology"],
+      views: 321000,
+      addedDate: "2024-04-01"
+    },
+    {
+      id: 8,
+      title: "The Last Kingdom",
+      image: "https://placehold.co/300x400/6366f1/ffffff?text=Last+Kingdom",
+      author: "Margaret Clarke",
+      genre: "Fiction",
+      type: "Novel",
+      status: "Completed",
+      description: "An epic tale of power, betrayal, and redemption in a fantasy kingdom",
+      chapters: 22,
+      latestChapter: "Chapter 22",
+      firstChapter: "Chapter 01",
+      tags: ["Fantasy", "Epic", "Adventure"],
+      views: 1200000,
+      addedDate: "2024-03-25"
+    }
+  ];
+
+  // Mock data for chapters
+  const chapters = [
+    { id: 1, title: "Chapter 1", date: "22/07/2025", views: 20586 },
+    { id: 2, title: "Chapter 2", date: "23/11/2024", views: 18766 },
+    { id: 3, title: "Chapter 3", date: "23/11/2024", views: 18491 },
+    { id: 4, title: "Chapter 4", date: "23/11/2024", views: 17854 },
+    { id: 5, title: "Chapter 5", date: "23/11/2024", views: 17528 },
+    { id: 6, title: "Chapter 6", date: "23/11/2024", views: 16690 },
+    { id: 7, title: "Chapter 7", date: "23/11/2024", views: 16656 },
+    { id: 8, title: "Chapter 8", date: "23/11/2024", views: 16468 },
+    { id: 9, title: "Chapter 9", date: "23/11/2024", views: 16449 },
+    { id: 10, title: "Chapter 10", date: "23/11/2024", views: 16501 },
+    { id: 11, title: "Chapter 11", date: "23/11/2024", views: 16142 },
+    { id: 12, title: "Chapter 12", date: "23/11/2024", views: 15565 }
+  ];
+
+  // Mock data for book pages
+  const bookPages = [
+    "https://placehold.co/800x1200/6366f1/ffffff?text=Chapter+1+Page+1",
+    "https://placehold.co/800x1200/8b5cf6/ffffff?text=Chapter+1+Page+2",
+    "https://placehold.co/800x1200/06b6d4/ffffff?text=Chapter+1+Page+3",
+    "https://placehold.co/800x1200/10b981/ffffff?text=Chapter+1+Page+4",
+    "https://placehold.co/800x1200/f59e0b/ffffff?text=Chapter+1+Page+5",
+    "https://placehold.co/800x1200/ef4444/ffffff?text=Chapter+1+Page+6",
+    "https://placehold.co/800x1200/8b5cf6/ffffff?text=Chapter+1+Page+7",
+    "https://placehold.co/800x1200/06b6d4/ffffff?text=Chapter+1+Page+8",
+    "https://placehold.co/800x1200/10b981/ffffff?text=Chapter+1+Page+9",
+    "https://placehold.co/800x1200/f59e0b/ffffff?text=Chapter+1+Page+10"
+  ];
+
+  const handleBookClick = (book) => {
+    setSelectedBook(book);
+    setCurrentView('book');
+  };
+
+  const handleChapterClick = (chapter) => {
+    setSelectedChapter(chapter);
+    setCurrentView('chapter');
+    setCurrentImageIndex(0);
+    setIsReading(true);
+  };
+
+  const handleNextImage = () => {
+    if (currentImageIndex < bookPages.length - 1) {
+      setCurrentImageIndex(currentImageIndex + 1);
+    }
+  };
+
+  const handlePrevImage = () => {
+    if (currentImageIndex > 0) {
+      setCurrentImageIndex(currentImageIndex - 1);
+    }
+  };
+
+  const handleBackToBook = () => {
+    setCurrentView('book');
+    setIsReading(false);
+  };
+
+  const handleBackToHome = () => {
+    setCurrentView('home');
+    setSelectedBook(null);
+    setSelectedChapter(null);
+    setIsReading(false);
+  };
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      setCurrentView('search');
+    }
+  };
+
+  const handleBookmark = (book) => {
+    if (bookmarks.includes(book.id)) {
+      setBookmarks(bookmarks.filter(id => id !== book.id));
+    } else {
+      setBookmarks([...bookmarks, book.id]);
+    }
+  };
+
+  const handleAddToHistory = (book, chapter) => {
+    const historyItem = {
+      bookId: book.id,
+      bookTitle: book.title,
+      chapter: chapter.title,
+      lastRead: new Date().toLocaleString(),
+      progress: `${chapter.views}%`
+    };
+    
+    // Update or add to history
+    setHistory(prev => {
+      const existingIndex = prev.findIndex(item => item.bookId === book.id && item.chapter === chapter.title);
+      if (existingIndex >= 0) {
+        const updated = [...prev];
+        updated[existingIndex] = historyItem;
+        return updated;
+      } else {
+        return [...prev, historyItem];
+      }
+    });
+  };
+
+  // Filter books based on search and type/genre
+  const filteredBooks = bookList.filter(book => {
+    const matchesType = filterType === 'All' || book.type === filterType;
+    const matchesGenre = filterGenre === 'All' || book.genre === filterGenre;
+    const matchesSearch = searchQuery === '' || 
+      book.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      book.author.toLowerCase().includes(searchQuery.toLowerCase());
+    
+    return matchesType && matchesGenre && matchesSearch;
+  });
+
+  // Sort books based on view mode
+  const displayedBooks = [...filteredBooks].sort((a, b) => {
+    switch (viewMode) {
+      case 'latest':
+        return new Date(b.addedDate) - new Date(a.addedDate);
+      case 'popular':
+        return b.views - a.views;
+      case 'all':
+        return a.title.localeCompare(b.title);
+      default:
+        return 0;
+    }
+  });
+
+  const renderHome = () => (
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                <div className="flex items-center">
+                  <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold">X</div>
+                  <span className="ml-2 text-xl font-bold">X-5 Library</span>
+                </div>
+              </div>
+            </div>
+            
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center space-x-4">
+                <div className="flex items-center">
+                  <img src="https://placehold.co/20x20/ff0000/ffffff?text=T" alt="Textbook" className="w-5 h-5" />
+                  <span className="ml-1 text-sm font-medium">Textbook</span>
+                </div>
+                <div className="flex items-center">
+                  <img src="https://placehold.co/20x20/0000ff/ffffff?text=N" alt="Novel" className="w-5 h-5" />
+                  <span className="ml-1 text-sm font-medium">Novel</span>
+                </div>
+              </div>
+              
+              <div className="relative">
+                <input
+                  type="text"
+                  placeholder="Cari buku..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleSearch()}
+                  className="pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <button 
+                  onClick={handleSearch}
+                  className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-gray-800 text-white px-3 py-1 rounded text-sm"
+                >
+                  Cari
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Navigation */}
+      <nav className="bg-white border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex space-x-4">
+            {['Beranda', 'Terbaru', 'Populer', 'Daftar Buku', 'Sains', 'Fiksi', 'Non-Fiksi', 'Baru'].map((item) => (
+              <button
+                key={item}
+                className={`px-3 py-2 rounded-md text-sm font-medium ${
+                  item === 'Beranda' 
+                    ? 'bg-blue-100 text-blue-800' 
+                    : 'text-gray-700 hover:text-blue-600 hover:bg-gray-100'
+                }`}
+                onClick={() => {
+                  if (item === 'Terbaru') {
+                    setViewMode('latest');
+                  } else if (item === 'Populer') {
+                    setViewMode('popular');
+                  } else if (item === 'Daftar Buku') {
+                    setViewMode('all');
+                  } else if (item === 'Sains') {
+                    setFilterGenre('Science');
+                  } else if (item === 'Fiksi') {
+                    setFilterGenre('Fiction');
+                  } else if (item === 'Non-Fiksi') {
+                    setFilterGenre('Non-Fiction');
+                  }
+                }}
+              >
+                {item}
+              </button>
+            ))}
+          </div>
+        </div>
+      </nav>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <h2 className="text-xl font-semibold mb-6">
+            {viewMode === 'latest' && 'Buku Terbaru'}
+            {viewMode === 'popular' && 'Buku Paling Populer'}
+            {viewMode === 'all' && 'Semua Buku'}
+          </h2>
+          
+          <div className="flex flex-wrap gap-4 mb-6">
+            <select 
+              value={filterType} 
+              onChange={(e) => setFilterType(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-2"
+            >
+              <option value="All">Semua Tipe</option>
+              <option value="Textbook">Textbook</option>
+              <option value="Novel">Novel</option>
+            </select>
+            
+            <select 
+              value={filterGenre} 
+              onChange={(e) => setFilterGenre(e.target.value)}
+              className="border border-gray-300 rounded px-3 py-2"
+            >
+              <option value="All">Semua Genre</option>
+              <option value="Science">Sains</option>
+              <option value="Fiction">Fiksi</option>
+              <option value="Non-Fiction">Non-Fiksi</option>
+            </select>
+            
+            <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">Cari</button>
+          </div>
+          
+          <p className="text-sm text-gray-600 mb-6">
+            Temukan buku terbaik di X-5 Library, koleksi lengkap textbook dan novel terlengkap bisa kamu baca online.
+          </p>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {displayedBooks.map((book) => (
+              <div key={book.id} className="border border-gray-200 rounded-lg overflow-hidden cursor-pointer hover:shadow-md transition-shadow"
+                   onClick={() => handleBookClick(book)}>
+                <div className="relative">
+                  <img src={book.image} alt={book.title} className="w-full h-48 object-cover" />
+                  <div className="absolute top-2 left-2 bg-blue-600 text-white text-xs font-bold px-2 py-1 rounded">
+                    {viewMode === 'popular' ? `${book.views.toLocaleString()}x` : 'UP 1'}
+                  </div>
+                </div>
+                <div className="p-4">
+                  <h3 className="font-bold text-lg">{book.title}</h3>
+                  <div className="text-sm text-gray-600 mb-2">
+                    <span>{book.chapters}rb x • {book.status}</span>
+                  </div>
+                  <p className="text-sm text-gray-700 mb-4">{book.description}</p>
+                  <div className="flex items-center justify-between text-sm text-gray-600">
+                    <span>Awal: {book.firstChapter}</span>
+                    <span>Terbaru: {book.latestChapter}</span>
+                  </div>
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {book.tags.map(tag => (
+                      <span key={tag} className="bg-gray-200 text-gray-800 text-xs px-2 py-1 rounded">
+                        {tag}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex justify-center space-x-8">
+            <button 
+              onClick={() => setCurrentView('home')}
+              className="flex flex-col items-center"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold mb-1">K</div>
+              <span className="text-sm">Daftar Isi</span>
+            </button>
+            <button 
+              onClick={() => setCurrentView('bookmarks')}
+              className="flex flex-col items-center"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold mb-1">B</div>
+              <span className="text-sm">Bookmark</span>
+            </button>
+            <button 
+              onClick={() => setCurrentView('history')}
+              className="flex flex-col items-center"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold mb-1">H</div>
+              <span className="text-sm">Histori</span>
+            </button>
+          </div>
+          <div className="mt-8 text-center text-sm text-gray-600">
+            <p>Copyright @ X-5 Library. All right reserved.</p>
+            <p className="mt-2">
+              Baca Buku | Baca Textbook | Baca Novel | DMCA | Terms of Usage | Privacy Policy | Contact Us
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+
+  const renderBookmarks = () => (
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <button
+              onClick={() => setCurrentView('home')}
+              className="flex items-center text-blue-600 hover:text-blue-800"
+            >
+              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Beranda
+            </button>
+            
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center">
+                  <img src="https://placehold.co/20x20/ff0000/ffffff?text=T" alt="Textbook" className="w-5 h-5" />
+                  <span className="ml-1 text-sm font-medium">Textbook</span>
+                </div>
+                <div className="flex items-center">
+                  <img src="https://placehold.co/20x20/0000ff/ffffff?text=N" alt="Novel" className="w-5 h-5" />
+                  <span className="ml-1 text-sm font-medium">Novel</span>
+                </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <h2 className="text-xl font-semibold mb-6">Bookmark Browser</h2>
+          
+          <div className="space-y-4">
+            {bookmarks.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600">Tidak ada buku yang ditambahkan ke bookmark</p>
+              </div>
+            ) : (
+              bookmarks.map(bookId => {
+                const book = bookList.find(b => b.id === bookId);
+                if (!book) return null;
+                
+                return (
+                  <div key={book.id} className="border border-gray-200 rounded-lg p-4 flex items-start">
+                    <img src={book.image} alt={book.title} className="w-20 h-28 object-cover rounded" />
+                    <div className="ml-4 flex-1">
+                      <h3 className="font-bold text-lg">{book.title}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{book.author}</p>
+                      <p className="text-sm text-gray-600 mt-1">{book.genre} • {book.type}</p>
+                      <div className="mt-3 flex space-x-2">
+                        <button
+                          onClick={() => handleBookClick(book)}
+                          className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                        >
+                          Baca
+                        </button>
+                        <button
+                          onClick={() => setBookmarks(bookmarks.filter(id => id !== book.id))}
+                          className="bg-gray-300 text-gray-800 px-3 py-1 rounded text-sm hover:bg-gray-400"
+                        >
+                          Hapus
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex justify-center space-x-8">
+            <button 
+              onClick={() => setCurrentView('home')}
+              className="flex flex-col items-center"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold mb-1">K</div>
+              <span className="text-sm">Daftar Isi</span>
+            </button>
+            <button 
+              onClick={() => setCurrentView('bookmarks')}
+              className="flex flex-col items-center"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold mb-1">B</div>
+              <span className="text-sm">Bookmark</span>
+            </button>
+            <button 
+              onClick={() => setCurrentView('history')}
+              className="flex flex-col items-center"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold mb-1">H</div>
+              <span className="text-sm">Histori</span>
+            </button>
+          </div>
+          <div className="mt-8 text-center text-sm text-gray-600">
+            <p>Copyright @ X-5 Library. All right reserved.</p>
+            <p className="mt-2">
+              Baca Buku | Baca Textbook | Baca Novel | DMCA | Terms of Usage | Privacy Policy | Contact Us
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+
+  const renderHistory = () => (
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <button
+              onClick={() => setCurrentView('home')}
+              className="flex items-center text-blue-600 hover:text-blue-800"
+            >
+              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Beranda
+            </button>
+            
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center">
+                  <img src="https://placehold.co/20x20/ff0000/ffffff?text=T" alt="Textbook" className="w-5 h-5" />
+                  <span className="ml-1 text-sm font-medium">Textbook</span>
+                </div>
+                <div className="flex items-center">
+                  <img src="https://placehold.co/20x20/0000ff/ffffff?text=N" alt="Novel" className="w-5 h-5" />
+                  <span className="ml-1 text-sm font-medium">Novel</span>
+                </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <h2 className="text-xl font-semibold mb-6">Histori</h2>
+          
+          <div className="space-y-4">
+            {history.length === 0 ? (
+              <div className="text-center py-8">
+                <p className="text-gray-600">Tidak ada riwayat membaca</p>
+              </div>
+            ) : (
+              history.map((item, index) => {
+                const book = bookList.find(b => b.id === item.bookId);
+                if (!book) return null;
+                
+                return (
+                  <div key={index} className="border border-gray-200 rounded-lg p-4 flex items-start">
+                    <img src={book.image} alt={book.title} className="w-20 h-28 object-cover rounded" />
+                    <div className="ml-4 flex-1">
+                      <h3 className="font-bold text-lg">{book.title}</h3>
+                      <p className="text-sm text-gray-600 mt-1">{item.chapter}</p>
+                      <div className="mt-2">
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div 
+                            className="bg-blue-600 h-2 rounded-full" 
+                            style={{ width: item.progress }}
+                          ></div>
+                        </div>
+                        <p className="text-sm text-gray-600 mt-1">{item.lastRead}</p>
+                      </div>
+                      <div className="mt-3 flex space-x-2">
+                        <button
+                          onClick={() => handleBookClick(book)}
+                          className="bg-blue-600 text-white px-3 py-1 rounded text-sm hover:bg-blue-700"
+                        >
+                          Lanjutkan Membaca
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex justify-center space-x-8">
+            <button 
+              onClick={() => setCurrentView('home')}
+              className="flex flex-col items-center"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold mb-1">K</div>
+              <span className="text-sm">Daftar Isi</span>
+            </button>
+            <button 
+              onClick={() => setCurrentView('bookmarks')}
+              className="flex flex-col items-center"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold mb-1">B</div>
+              <span className="text-sm">Bookmark</span>
+            </button>
+            <button 
+              onClick={() => setCurrentView('history')}
+              className="flex flex-col items-center"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold mb-1">H</div>
+              <span className="text-sm">Histori</span>
+            </button>
+          </div>
+          <div className="mt-8 text-center text-sm text-gray-600">
+            <p>Copyright @ X-5 Library. All right reserved.</p>
+            <p className="mt-2">
+              Baca Buku | Baca Textbook | Baca Novel | DMCA | Terms of Usage | Privacy Policy | Contact Us
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+
+  const renderBook = () => (
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <button
+              onClick={handleBackToHome}
+              className="flex items-center text-blue-600 hover:text-blue-800"
+            >
+              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Beranda
+            </button>
+            
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center">
+                  <img src="https://placehold.co/20x20/ff0000/ffffff?text=T" alt="Textbook" className="w-5 h-5" />
+                  <span className="ml-1 text-sm font-medium">Textbook</span>
+                </div>
+                <div className="flex items-center">
+                  <img src="https://placehold.co/20x20/0000ff/ffffff?text=N" alt="Novel" className="w-5 h-5" />
+                  <span className="ml-1 text-sm font-medium">Novel</span>
+                </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow-sm overflow-hidden">
+          <div className="relative">
+            <img src={selectedBook.image} alt={selectedBook.title} className="w-full h-64 object-cover" />
+            <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
+              <div className="text-white text-center">
+                <h1 className="text-2xl font-bold">{selectedBook.title}</h1>
+                <p className="text-sm mt-1">{selectedBook.genre}</p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="p-6">
+            <div className="flex flex-wrap gap-4 mb-6">
+              <button 
+                onClick={() => handleBookmark(selectedBook)}
+                className={`px-4 py-2 rounded text-sm font-medium ${
+                  bookmarks.includes(selectedBook.id)
+                    ? 'bg-red-600 text-white'
+                    : 'bg-blue-600 text-white'
+                } hover:bg-opacity-90 transition-colors`}
+              >
+                {bookmarks.includes(selectedBook.id) ? 'Hapus Bookmark' : 'Tambahkan Bookmark'}
+              </button>
+              <button className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300 transition-colors">Baca Nanti</button>
+              <button className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition-colors">+ Koleksi Baru</button>
+            </div>
+            
+            <p className="text-sm text-gray-700 mb-6">
+              {selectedBook.title} ({selectedBook.genre}) adalah seri {selectedBook.type} yang dibuat oleh {selectedBook.author} dan bergenre {selectedBook.genre}. Kamu bisa membaca chapter dari {selectedBook.type} {selectedBook.title} terlengkap dan terbaru dalam bahasa Indonesia gratis di X-5 Library.
+            </p>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div>
+                <h2 className="font-bold text-lg mb-4">Sinopsis</h2>
+                <p className="text-gray-700 leading-relaxed">
+                  Buku ini mengikuti perjalanan akademik dan pribadi para pelajar yang menghadapi tantangan dalam dunia pendidikan modern. Dengan pendekatan yang inovatif, penulis menyajikan konten yang tidak hanya informatif namun juga menginspirasi pembaca untuk berpikir kritis dan kreatif. Seiring dengan perkembangan cerita atau konsep, pembaca akan bertemu dengan berbagai ide dan perspektif yang mewakili sudut pandang berbeda tentang pendidikan dan pengembangan diri. Melalui narasi yang menginspirasi, penulis menyuarakan kritik terhadap sistem pendidikan yang kaku dan berorientasi pada angka semata. Buku ini mengajak pembaca untuk mengevaluasi kembali arti sebenarnya dari belajar dan menjadi pribadi yang autentik tanpa harus terjebak pada standar yang tidak relevan dengan potensi individu masing-masing.
+                </p>
+              </div>
+              
+              <div>
+                <h2 className="font-bold text-lg mb-4">Informasi Buku</h2>
+                <table className="w-full border-collapse">
+                  <tbody>
+                    <tr>
+                      <td className="py-2 px-4 border">Judul Buku</td>
+                      <td className="py-2 px-4 border">{selectedBook.title}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-4 border">Jenis Buku</td>
+                      <td className="py-2 px-4 border">{selectedBook.type}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-4 border">Genre</td>
+                      <td className="py-2 px-4 border">{selectedBook.genre}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-4 border">Konsep Cerita</td>
+                      <td className="py-2 px-4 border">{selectedBook.genre}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-4 border">Pengarang</td>
+                      <td className="py-2 px-4 border">{selectedBook.author}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-4 border">Status</td>
+                      <td className="py-2 px-4 border">{selectedBook.status}</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-4 border">Umur Pembaca</td>
+                      <td className="py-2 px-4 border">13 Tahun (minimal)</td>
+                    </tr>
+                    <tr>
+                      <td className="py-2 px-4 border">Cara Baca</td>
+                      <td className="py-2 px-4 border">Kiri ke kanan</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div className="mb-8">
+              <h2 className="font-bold text-lg mb-4">Daftar Chapter</h2>
+              <p className="text-sm text-gray-600 mb-4">
+                Berikut daftar chapter dari {selectedBook.title} bahasa Indonesia terlengkap. Untuk membaca chapter dari {selectedBook.type} {selectedBook.title}, cukup klik daftar chapter dibawah ini.
+              </p>
+              
+              <div className="flex space-x-2 mb-4">
+                <button className="bg-blue-600 text-white px-3 py-1 rounded text-sm">Semua Chapter</button>
+                <button className="bg-white text-gray-800 px-3 py-1 rounded text-sm border">1-50</button>
+                <button className="bg-white text-gray-800 px-3 py-1 rounded text-sm border">51-56</button>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full border-collapse">
+                  <thead>
+                    <tr className="bg-gray-100">
+                      <th className="py-2 px-4 border">Chapter</th>
+                      <th className="py-2 px-4 border">Views</th>
+                      <th className="py-2 px-4 border">Tanggal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {chapters.map((chapter) => (
+                      <tr key={chapter.id} className="hover:bg-gray-50 cursor-pointer" onClick={() => handleChapterClick(chapter)}>
+                        <td className="py-2 px-4 border">{chapter.title}</td>
+                        <td className="py-2 px-4 border">{chapter.views}</td>
+                        <td className="py-2 px-4 border">{chapter.date}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            
+            <div className="bg-gray-50 p-6 rounded-lg">
+              <h2 className="font-bold text-lg mb-4">Background Cerita</h2>
+              <p className="text-gray-700 leading-relaxed">
+                Buku ini lahir dari pengalaman pribadi penulis yang merasa sistem pendidikan saat ini terlalu mengekang kreatifitas dan talenta anak muda. Penulis ingin menghadirkan kisah yang relatable dengan generasi zaman sekarang dan menantang norma yang ada dengan cara yang ringan dan mudah diakses melalui medium visual. Selain itu, buku ini juga dibuat sebagai bentuk protes sosial terhadap metode penerimaan yang dianggap tidak adil dan kurang efektif.
+              </p>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      {/* Footer */}
+      <footer className="bg-white border-t">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <div className="flex justify-center space-x-8">
+            <button 
+              onClick={() => setCurrentView('home')}
+              className="flex flex-col items-center"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold mb-1">K</div>
+              <span className="text-sm">Daftar Isi</span>
+            </button>
+            <button 
+              onClick={() => setCurrentView('bookmarks')}
+              className="flex flex-col items-center"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold mb-1">B</div>
+              <span className="text-sm">Bookmark</span>
+            </button>
+            <button 
+              onClick={() => setCurrentView('history')}
+              className="flex flex-col items-center"
+            >
+              <div className="w-8 h-8 bg-blue-600 rounded text-white flex items-center justify-center font-bold mb-1">H</div>
+              <span className="text-sm">Histori</span>
+            </button>
+          </div>
+          <div className="mt-8 text-center text-sm text-gray-600">
+            <p>Copyright @ X-5 Library. All right reserved.</p>
+            <p className="mt-2">
+              Baca Buku | Baca Textbook | Baca Novel | DMCA | Terms of Usage | Privacy Policy | Contact Us
+            </p>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+
+  const renderChapter = () => (
+    <div className="min-h-screen bg-gray-100">
+      {/* Header */}
+      <header className="bg-white shadow-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="flex justify-between items-center h-16">
+            <button
+              onClick={handleBackToBook}
+              className="flex items-center text-blue-600 hover:text-blue-800"
+            >
+              <svg className="w-5 h-5 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+              Kembali ke Buku
+            </button>
+            
+            <div className="flex items-center space-x-6">
+              <div className="flex items-center">
+                  <img src="https://placehold.co/20x20/ff0000/ffffff?text=T" alt="Textbook" className="w-5 h-5" />
+                  <span className="ml-1 text-sm font-medium">Textbook</span>
+                </div>
+                <div className="flex items-center">
+                  <img src="https://placehold.co/20x20/0000ff/ffffff?text=N" alt="Novel" className="w-5 h-5" />
+                  <span className="ml-1 text-sm font-medium">Novel</span>
+                </div>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content */}
+      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <div className="bg-white rounded-lg shadow-sm p-6 mb-8">
+          <div className="flex justify-between items-center mb-4">
+            <h1 className="text-2xl font-bold">{selectedChapter.title}</h1>
+          </div>
+          
+          <div className="text-gray-700 mb-6">
+            <p>{selectedChapter.title} dari {selectedBook.title}</p>
+            <p>Kamu sedang berada di halaman {selectedBook.title} {selectedChapter.title} bahasa Indonesia, chapter ini bisa kamu baca di X-5 Library dengan kualitas gambar terbaik dalam bahasa Indo.</p>
+          </div>
+          
+          <div className="bg-gray-50 p-4 rounded-lg">
+            <table className="w-full border-collapse">
+              <tbody>
+                <tr>
+                  <td className="py-2 px-4 border">Judul</td>
+                  <td className="py-2 px-4 border">{selectedBook.title} {selectedChapter.title}</td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-4 border">Tanggal Rilis</td>
+                  <td className="py-2 px-4 border">2024-11-23</td>
+                </tr>
+                <tr>
+                  <td className="py-2 px-4 border">Arah Baca</td>
+                  <td className="py-2 px-4 border">Kiri ke Kanan</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Page Viewer */}
+        <div className="bg-black min-h-screen flex flex-col items-center justify-center relative">
+          <div className="absolute top-4 left-4">
+            <button
+              onClick={handlePrevImage}
+              disabled={currentImageIndex === 0}
+              className="bg-white text-gray-800 p-2 rounded-full hover:bg-gray-200 disabled:opacity-50"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="absolute top-4 right-4">
+            <button
+              onClick={handleNextImage}
+              disabled={currentImageIndex === bookPages.length - 1}
+              className="bg-white text-gray-800 p-2 rounded-full hover:bg-gray-200 disabled:opacity-50"
+            >
+              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+              </svg>
+            </button>
+          </div>
+          
+          <div className="flex-1 w-full max-w-4xl aspect-[3/4] flex items-center justify-center">
+            <img
+              src={bookPages[currentImageIndex]}
+              alt={`Chapter ${selectedChapter.title} Page ${currentImageIndex + 1}`}
+              className="max-h-full max-w-full object-contain"
+            />
+          </div>
+          
+          <div className="absolute bottom-4 left-0 right-0 flex justify-center">
+            <div className="flex space-x-2">
+              {bookPages.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`w-2 h-2 rounded-full ${
+                    index === currentImageIndex ? 'bg-white' : 'bg-gray-600'
+                  }`}
+                />
+              ))}
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  );
+
+  // Update history when reading a chapter
+  useEffect(() => {
+    if (selectedChapter && selectedBook) {
+      handleAddToHistory(selectedBook, selectedChapter);
+    }
+  }, [selectedChapter, selectedBook]);
+
+  return (
+    <div>
+      {currentView === 'home' && renderHome()}
+      {currentView === 'bookmarks' && renderBookmarks()}
+      {currentView === 'history' && renderHistory()}
+      {currentView === 'book' && renderBook()}
+      {currentView === 'chapter' && renderChapter()}
+    </div>
+  );
+};
